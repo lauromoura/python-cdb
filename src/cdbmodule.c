@@ -1060,24 +1060,27 @@ atomic replacement of CDBs.\n\
 \n\
 This module defines a new Exception \"error\".";
 
-DL_EXPORT(void)
-initcdb() {
-  PyObject *m, *d, *v;
+static struct PyModuleDef moduledef = {
+  PyModuleDef_HEAD_INIT,
+  .m_name = "cdb",
+  .m_doc = module_doc,
+  .m_size = -1,
+  .m_methods = module_functions,
+};
 
-  CdbType.ob_type = &PyType_Type;
-  CdbMakeType.ob_type = &PyType_Type;
+MODULE_INIT_FUNC(cdb)
+{
+  PyObject *m, *v;
 
-  m = Py_InitModule3("cdb", module_functions, module_doc);
+  Py_TYPE(&CdbType) = &PyType_Type;
+  Py_TYPE(&CdbMakeType) = &PyType_Type;
 
-  d = PyModule_GetDict(m);
+  m = PyModule_Create(&moduledef);
 
   CDBError = PyErr_NewException("cdb.error", NULL, NULL);
-  PyDict_SetItemString(d, "error", CDBError);
+  PyModule_AddObject(m, "error", CDBError);
+  PyModule_AddStringConstant(m, "__version__", VERSION);
+  PyModule_AddStringConstant(m, "__cdb_version__", CDBVERSION);
 
-  PyDict_SetItemString(d, "__version__", 
-                       v = PyString_FromString(VERSION));
-  PyDict_SetItemString(d, "__cdb_version__",
-                       v = PyString_FromString(CDBVERSION));
-  Py_XDECREF(v);
-
+  return m;
 }
