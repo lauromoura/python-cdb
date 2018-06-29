@@ -940,8 +940,7 @@ cdbmake_getattr(cdbmakeobject *self, char *name) {
 static PyTypeObject CdbType = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
+        PyVarObject_HEAD_INIT(NULL, 0)
         "cdb",              /*tp_name*/
         sizeof(CdbObject),  /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -976,8 +975,7 @@ static PyTypeObject CdbType = {
 static PyTypeObject CdbMakeType = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
+        PyVarObject_HEAD_INIT(NULL, 0)
         "cdbmake",              /*tp_name*/
         sizeof(cdbmakeobject),  /*tp_basicsize*/
         0,                      /*tp_itemsize*/
