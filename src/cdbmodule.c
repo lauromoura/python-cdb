@@ -75,7 +75,7 @@ typedef struct {
     uint32 numrecords;
 } CdbObject;
 
-staticforward PyTypeObject CdbType;
+static PyTypeObject CdbType;
 
 PyObject * CDBError;
 #define CDBerr PyErr_SetFromErrno(CDBError)
@@ -714,7 +714,7 @@ typedef struct {
     char finished;
 } cdbmakeobject;
 
-staticforward PyTypeObject CdbMakeType;
+static PyTypeObject CdbMakeType;
 
 #define CDBMAKEerr PyErr_SetFromErrno(PyExc_IOError)
 #define CDBMAKEfinished PyErr_SetString(CDBError, "cdbmake object already finished")
@@ -921,7 +921,7 @@ cdbmake_getattr(cdbmakeobject *self, char *name) {
 
 /* ---------------- Type delineation -------------------- */
 
-statichere PyTypeObject CdbType = {
+static PyTypeObject CdbType = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
@@ -949,7 +949,7 @@ statichere PyTypeObject CdbType = {
         cdbo_object_doc,        /*tp_doc*/
 };
 
-statichere PyTypeObject CdbMakeType = {
+static PyTypeObject CdbMakeType = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
