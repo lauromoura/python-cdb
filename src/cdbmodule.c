@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <fcntl.h>
 #include "cdb.h"
 #include "cdb_make.h"
+#include "py3c/py3c.h"
 
 #define open_read(x)       (open((x),O_RDONLY|O_NDELAY))
 /* ala djb's open_foo */
@@ -90,15 +91,15 @@ cdb_pyread(CdbObject *cdb_o, unsigned int len, uint32 pos) {
   if (c->map) {
     if ((pos > c->size) || (c->size - pos < len))
       goto FORMAT;
-    s = PyString_FromStringAndSize(c->map + pos, len);
+    s = PyStr_FromStringAndSize(c->map + pos, len);
   } else {
-    s = PyString_FromStringAndSize(NULL, len);
+    s = PyStr_FromStringAndSize(NULL, len);
     if (s == NULL)
       return NULL;
     if (lseek(c->fd,pos,SEEK_SET) == -1) goto ERRNO;
     while (len > 0) {
       int r;
-      char * buf = PyString_AsString(s);
+      char * buf = PyStr_AsString(s);
 
       do {
         Py_BEGIN_ALLOW_THREADS
@@ -190,7 +191,7 @@ cdbo_get(CdbObject *self, PyObject *args) {
 
   /* prep. possibly ensuing call to getnext() */
   Py_XDECREF(self->getkey);
-  self->getkey = PyString_FromStringAndSize(key, klen);
+  self->getkey = PyStr_FromStringAndSize(key, klen);
   if (self->getkey == NULL)
     return NULL;
 
@@ -269,8 +270,13 @@ cdbo_getnext(CdbObject *self, PyObject *args) {
   }
 
   switch(cdb_findnext(&self->c, 
-                      PyString_AsString(self->getkey), 
+                      PyStr_AsString(self->getkey), 
+#if PY_MAJOR_VERSION >= 3
+                      // Length in codepoints
+                      PyUnicode_GetLength(self->getkey))) {
+#else
                       PyString_Size(self->getkey))) {
+#endif
     case -1:
       return CDBerr;
     case  0:
@@ -330,15 +336,20 @@ _cdbo_keyiter(CdbObject *self) {
     if (key == NULL)
       return NULL;
 
-    switch(cdb_find(&self->c,PyString_AsString(key),PyString_Size(key))) {
+    switch(cdb_find(&self->c,PyStr_AsString(key),
+#if PY_MAJOR_VERSION >= 3
+                // Length in codepoints
+                PyUnicode_GetLength(key))) {
+#else
+                PyString_Size(key))) {
+#endif
       case -1:
         Py_DECREF(key);
         key = NULL;
         return CDBerr;
       case 0:
         /* bizarre, impossible? PyExc_RuntimeError? */
-        PyErr_SetString(PyExc_KeyError, 
-                        PyString_AS_STRING((PyStringObject *) key));
+        PyErr_SetObject(PyExc_KeyError, key);
         Py_DECREF(key);
         key = NULL;
       default:
@@ -541,8 +552,7 @@ cdbo_subscript(CdbObject *self, PyObject *k) {
     case -1:
       return CDBerr;
     case 0:
-      PyErr_SetString(PyExc_KeyError, 
-                      PyString_AS_STRING((PyStringObject *) k));
+      PyErr_SetObject(PyExc_KeyError, k);
       return NULL;
     default:
       return CDBO_CURDATA(self);
@@ -611,9 +621,9 @@ cdbo_constructor(PyObject *ignore, PyObject *args) {
   if (! PyArg_ParseTuple(args, "O:new", &f))
     return NULL;
 
-  if (PyString_Check(f)) {
+  if (PyStr_Check(f)) {
 
-    if ((fd = open_read(PyString_AsString(f))) == -1)
+    if ((fd = open_read(PyStr_AsString(f))) == -1)
       return CDBerr;
 
     name_attr = f;
@@ -645,7 +655,7 @@ cdbo_dealloc(CdbObject *self) {  /* del(cdb_o) */
   if (self->name_py != NULL) {
 
     /* if cdb_o.name is not None:  we open()d it ourselves, so close it */
-    if (PyString_Check(self->name_py))
+    if (PyStr_Check(self->name_py))
       close(self->c.fd);
 
     Py_DECREF(self->name_py);
@@ -817,8 +827,8 @@ CdbMake_finish(cdbmakeobject *self, PyObject *args) {
 
   self->cm.fp = NULL;
 
-  if (rename(PyString_AsString(self->fntmp),
-             PyString_AsString(self->fn))    == -1)
+  if (rename(PyStr_AsString(self->fntmp),
+             PyStr_AsString(self->fn))    == -1)
     return CDBMAKEerr;
 
   return Py_BuildValue("");
