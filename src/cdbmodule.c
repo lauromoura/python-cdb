@@ -668,6 +668,8 @@ cdbo_dealloc(CdbObject *self) {  /* del(cdb_o) */
   PyObject_DEL(self);
 }
 
+#if PY_MAJOR_VERSION >= 3
+#else
 static PyObject *
 cdbo_getattr(CdbObject *self, char *name) {
 
@@ -701,6 +703,7 @@ cdbo_getattr(CdbObject *self, char *name) {
   PyErr_SetString(PyExc_AttributeError, name);
   return NULL;
 }
+#endif
 
 
 /* ----------------- cdbmake object ------------------ */
@@ -904,6 +907,8 @@ cdbmake_dealloc(cdbmakeobject *self) {
   PyObject_DEL(self);
 }
 
+#if PY_MAJOR_VERSION >= 3
+#else
 static PyObject *
 cdbmake_getattr(cdbmakeobject *self, char *name) {
 
@@ -928,6 +933,7 @@ cdbmake_getattr(cdbmakeobject *self, char *name) {
 
   return Py_FindMethod(cdbmake_methods, (PyObject *) self, name);
 }
+#endif
 
 /* ---------------- Type delineation -------------------- */
 
@@ -942,7 +948,11 @@ static PyTypeObject CdbType = {
         /* methods */
         (destructor)cdbo_dealloc, /*tp_dealloc*/
         0,                      /*tp_print*/
+#if PY_MAJOR_VERSION >= 3
+        0,                      /*tp_getattr*/
+#else
         (getattrfunc)cdbo_getattr, /*tp_getattr*/
+#endif
         0,                      /*tp_setattr*/
         0,                      /*tp_compare*/
         0,                      /*tp_repr*/
@@ -952,7 +962,11 @@ static PyTypeObject CdbType = {
         0,                      /*tp_hash*/
         0,                      /*tp_call*/
         0,                      /*tp_str*/
+#if PY_MAJOR_VERSION >= 3
         0,                      /*tp_getattro*/
+#else
+        0,                      /*tp_getattro*/
+#endif
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
         0,                      /*tp_xxx4*/
@@ -970,7 +984,11 @@ static PyTypeObject CdbMakeType = {
         /* methods */
         (destructor)cdbmake_dealloc, /*tp_dealloc*/
         0,                      /*tp_print*/
+#if PY_MAJOR_VERSION >= 3
+        0,                      /*tp_getattr*/
+#else
         (getattrfunc)cdbmake_getattr, /*tp_getattr*/
+#endif
         0,                      /*tp_setattr*/
         0,                      /*tp_compare*/
         0,                      /*tp_repr*/
@@ -980,7 +998,11 @@ static PyTypeObject CdbMakeType = {
         0,                      /*tp_hash*/
         0,                      /*tp_call*/
         0,                      /*tp_str*/
+#if PY_MAJOR_VERSION >= 3
         0,                      /*tp_getattro*/
+#else
+        0,                      /*tp_getattro*/
+#endif
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
         0,                      /*tp_xxx4*/
