@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 
 SRCDIR   = "src"
-SRCFILES = map(lambda f: SRCDIR + '/' + f + '.c',
+SRCFILES = [SRCDIR + '/' + f + '.c' for f in
               ["cdbmodule","cdb","cdb_make","cdb_hash",
-               "uint32_pack","uint32_unpack"])
+               "uint32_pack","uint32_unpack"]]
 
 from distutils.core import setup, Extension
 
