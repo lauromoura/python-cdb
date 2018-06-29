@@ -792,10 +792,10 @@ CdbMake_addmany(cdbmakeobject *self, PyObject *args) {
     char *key, *dat;
     Py_ssize_t klen, dlen;
 
-    if (PyString_AsStringAndSize(key_item, &key, &klen) < 0)
+    if ((key = PyStr_AsUTF8AndSize(key_item, &klen)) == NULL)
       return NULL;
 
-    if (PyString_AsStringAndSize(data_item, &dat, &dlen) < 0)
+    if ((dat = PyStr_AsUTF8AndSize(data_item, &dlen)) == NULL)
       return NULL;
     
     if (cdb_make_add(&self->cm, key, klen, dat, dlen) == -1)
@@ -866,7 +866,7 @@ new_cdbmake(PyObject *ignore, PyObject *args) {
   if (! PyArg_ParseTuple(args, "SS|i", &fn, &fntmp))
     return NULL;
 
-  f = fopen(PyString_AsString(fntmp), "w+b");
+  f = fopen(PyStr_AsString(fntmp), "w+b");
   if (f == NULL) {
     return CDBMAKEerr;
   }
@@ -899,7 +899,7 @@ cdbmake_dealloc(cdbmakeobject *self) {
   if (self->fntmp != NULL) {
     if (self->cm.fp != NULL) {
       fclose(self->cm.fp);
-      unlink(PyString_AsString(self->fntmp));
+      unlink(PyStr_AsString(self->fntmp));
     }
     Py_DECREF(self->fntmp);
   }
